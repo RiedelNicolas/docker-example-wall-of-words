@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Post to the Wall</title>
+    <style>body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }</style>
+</head>
+<body>
+    <h1>Post to the Classroom Wall!</h1>
+    <form id="messageForm">
+        <input type="text" id="messageInput" placeholder="Your message..." size="40" style="font-size: 18px;">
+        <input type="submit" value="Post" style="font-size: 18px;">
+    </form>
+    <p><a href="/wall.html" target="_blank">View the Live Wall &rarr;</a></p>
+
+    <script>
+        document.getElementById('messageForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const input = document.getElementById('messageInput');
+            const message = input.value;
+
+            if (message) {
+                // IMPORTANT: In a real classroom, replace 'localhost' with the teacher's actual local IP address.
+                await fetch('http://localhost:3000/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+                input.value = '';
+            }
+        });
+    </script>
+</body>
+</html>
