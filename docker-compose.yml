@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  api:
+    build: ./api
+    ports:
+      - "3000:3000"
+    environment:
+      - REDIS_HOST=redis
+    networks:
+      - wall-network
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    networks:
+      - wall-network
+
+  redis:
+    image: "redis:alpine"
+    volumes:
+      - redis-data:/data
+    networks:
+      - wall-network
+
+networks:
+  wall-network:
+    driver: bridge
+
+volumes:
+  redis-data:

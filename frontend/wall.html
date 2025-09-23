@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>The Wall</title>
+    <style>
+        body { font-family: monospace; background-color: #333; color: #fff; }
+        #wall { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; padding: 20px;}
+        .message { background-color: #555; padding: 10px 20px; border-radius: 5px; font-size: 22px; }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">&gt;_ The Classroom Wall</h1>
+    <div id="wall"></div>
+
+    <script>
+        async function fetchMessages() {
+            // IMPORTANT: In a real classroom, replace 'localhost' with the teacher's actual local IP address.
+            const response = await fetch('http://localhost:3000/messages');
+            const messages = await response.json();
+            const wall = document.getElementById('wall');
+            wall.innerHTML = '';
+            messages.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = 'message';
+                div.textContent = msg;
+                wall.appendChild(div);
+            });
+        }
+        setInterval(fetchMessages, 2000);
+        fetchMessages();
+    </script>
+</body>
+</html>
