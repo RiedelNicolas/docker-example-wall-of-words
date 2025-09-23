@@ -21,6 +21,50 @@ function initializeForm() {
 }
 
 /**
+ * Validates if the message contains only one word with at least 2 letters
+ * @param {string} message - The message to validate
+ * @returns {object} - Validation result with isValid and errorMessage
+ */
+function validateMessage(message) {
+    // Check if message contains only one word (no spaces)
+    if (message.includes(' ')) {
+        return {
+            isValid: false,
+            errorMessage: '❌ Solo se permite una palabra'
+        };
+    }
+    
+    // Check if message has at least 2 letters
+    if (message.length < 2) {
+        return {
+            isValid: false,
+            errorMessage: '❌ La palabra debe tener al menos 2 letras'
+        };
+    }
+    
+    return {
+        isValid: true,
+        errorMessage: ''
+    };
+}
+
+/**
+ * Shows error message to the user
+ * @param {string} errorMessage - The error message to display
+ * @param {HTMLInputElement} submitBtn - The submit button element
+ */
+function showErrorMessage(errorMessage, submitBtn) {
+    submitBtn.value = errorMessage;
+    submitBtn.style.backgroundColor = '#ff4757';
+    
+    // Reset button after 3 seconds
+    setTimeout(() => {
+        submitBtn.value = originalButtonText;
+        submitBtn.style.backgroundColor = '';
+    }, 3000);
+}
+
+/**
  * Handles form submission
  * @param {Event} event - The form submit event
  */
@@ -32,7 +76,14 @@ async function handleFormSubmit(event) {
     const message = input.value.trim();
 
     if (message) {
-        await postMessage(message, input, submitBtn);
+        // Validate the message
+        const validation = validateMessage(message);
+        
+        if (validation.isValid) {
+            await postMessage(message, input, submitBtn);
+        } else {
+            showErrorMessage(validation.errorMessage, submitBtn);
+        }
     }
 }
 
