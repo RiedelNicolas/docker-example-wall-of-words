@@ -98,8 +98,9 @@ async function postMessage(message, input, submitBtn) {
         // Show loading state
         setLoadingState(submitBtn, input, true);
         
-        // IMPORTANT: In a real classroom, replace 'localhost' with the teacher's actual local IP address.
-        const response = await fetch('http://localhost:3000/messages', {
+        // Use configuration from environment variables
+        const apiUrl = window.APP_CONFIG?.API_URL || 'http://localhost:3000';
+        const response = await fetch(`${apiUrl}/messages`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: message })

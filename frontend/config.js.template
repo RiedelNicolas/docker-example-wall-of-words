@@ -1,0 +1,6 @@
+// Configuration file - will be populated by environment variables
+window.APP_CONFIG = {
+    API_URL: '${API_URL}',
+    API_HOST: '${API_HOST}',
+    API_PORT: '${API_PORT}'
+};
