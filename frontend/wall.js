@@ -175,15 +175,6 @@ function createWordElement(word, count, isNew) {
         div.classList.add('new');
     }
     
-    // Add size class based on frequency (for visual emphasis)
-    if (count >= 10) {
-        div.classList.add('high-frequency');
-    } else if (count >= 5) {
-        div.classList.add('medium-frequency');
-    } else {
-        div.classList.add('low-frequency');
-    }
-    
     // Capitalize the word and show count
     const capitalizedWord = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
     div.innerHTML = `

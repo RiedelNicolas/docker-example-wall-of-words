@@ -94,59 +94,24 @@ body {
     animation: slideIn 0.5s ease-out;
 }
 
-/* Frequency-based styling */
-.word-item.high-frequency {
-    transform: scale(1.1);
-    font-size: 1.3rem;
-    min-height: 140px;
-}
-
-.word-item.high-frequency::before {
-    background: linear-gradient(90deg, #ff6b6b, #ee5a24);
-}
-
-.word-item.high-frequency .word {
-    font-weight: bold;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.word-item.medium-frequency {
-    transform: scale(1.05);
-    font-size: 1.1rem;
-    min-height: 130px;
-}
-
-.word-item.medium-frequency::before {
-    background: linear-gradient(90deg, #667eea, #764ba2);
-}
-
-.word-item.low-frequency::before {
-    background: linear-gradient(90deg, #95e1d3, #fce38a);
+/* Frequency-based styling - removed, all items same style */
+.word-item::before {
+    background: #000;
 }
 
 .word {
-    font-size: 1.5em;
-    font-weight: 600;
-    margin-bottom: 8px;
+    font-size: 2.2em;
+    font-weight: bold;
+    margin-bottom: 12px;
     letter-spacing: 0.5px;
+    color: white;
 }
 
 .count {
-    font-size: 0.9em;
-    opacity: 0.8;
-    color: #bdc3c7;
-    font-weight: 300;
-}
-
-.high-frequency .count {
-    font-size: 1em;
-    color: #ff6b6b;
-    font-weight: 500;
-}
-
-.medium-frequency .count {
-    color: #667eea;
-    font-weight: 400;
+    font-size: 1.4em;
+    opacity: 0.9;
+    color: white;
+    font-weight: bold;
 }
 
 @keyframes slideIn {
@@ -200,14 +165,6 @@ body {
     .word-item {
         padding: 15px;
         min-height: 100px;
-    }
-    
-    .word-item.high-frequency {
-        min-height: 120px;
-    }
-    
-    .word-item.medium-frequency {
-        min-height: 110px;
     }
     
     .empty-state h2 {
