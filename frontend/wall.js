@@ -1,25 +1,24 @@
 // Wall display functions
-let previousMessageCount = 0;
-let refreshInterval;
+let previousWordCount = 0;
 
 /**
  * Initializes the wall page
  */
 function initializeWall() {
     // Initial load
-    fetchMessages();
+    fetchWordCounts();
     
-    // Auto-refresh every 2 seconds
-    refreshInterval = setInterval(fetchMessages, 2000);
+    // Create refresh button
+    createRefreshButton();
     
     // Add visibility change listener to refresh when tab becomes active
     document.addEventListener('visibilitychange', handleVisibilityChange);
 }
 
 /**
- * Fetches messages from the server and updates the wall
+ * Fetches word counts from the server and updates the wall
  */
-async function fetchMessages() {
+async function fetchWordCounts() {
     const status = document.getElementById('status');
     
     try {
@@ -27,22 +26,62 @@ async function fetchMessages() {
         
         // Use configuration from environment variables
         const apiUrl = window.APP_CONFIG?.API_URL || 'http://localhost:3000';
-        const response = await fetch(`${apiUrl}/messages`);
-        const messages = await response.json();
+        const response = await fetch(`${apiUrl}/word-counts`);
+        const wordCounts = await response.json();
         
-        if (messages.length === 0) {
+        if (Object.keys(wordCounts).length === 0) {
             displayEmptyState();
-            updateStatus('Sin mensajes - esperando publicaciones...', 'normal');
+            updateStatus('Sin palabras - esperando publicaciones...', 'normal');
             return;
         }
         
-        displayMessages(messages);
-        updateMessageCount(messages.length);
+        displayWordCounts(wordCounts);
+        updateWordCountStatus(wordCounts);
         
     } catch (error) {
-        console.error('Error fetching messages:', error);
+        console.error('Error fetching word counts:', error);
         displayErrorState();
         updateStatus('Error de conexión - reintentando...', 'normal');
+    }
+}
+
+/**
+ * Creates a floating refresh button
+ */
+function createRefreshButton() {
+    const refreshBtn = document.createElement('button');
+    refreshBtn.id = 'refreshBtn';
+    refreshBtn.className = 'refresh-btn';
+    refreshBtn.innerHTML = '🔄 Refrescar';
+    refreshBtn.title = 'Refrescar palabras';
+    
+    // Add click handler
+    refreshBtn.addEventListener('click', handleRefreshClick);
+    
+    // Append to body
+    document.body.appendChild(refreshBtn);
+}
+
+/**
+ * Handles refresh button click
+ */
+async function handleRefreshClick() {
+    const refreshBtn = document.getElementById('refreshBtn');
+    
+    // Add loading state
+    refreshBtn.disabled = true;
+    refreshBtn.innerHTML = '🔄 Actualizando...';
+    refreshBtn.classList.add('loading');
+    
+    try {
+        await fetchWordCounts();
+    } finally {
+        // Reset button state
+        setTimeout(() => {
+            refreshBtn.disabled = false;
+            refreshBtn.innerHTML = '🔄 Refrescar';
+            refreshBtn.classList.remove('loading');
+        }, 500);
     }
 }
 
@@ -60,15 +99,15 @@ function updateStatus(text, type) {
 }
 
 /**
- * Displays the empty state when no messages exist
+ * Displays the empty state when no words exist
  */
 function displayEmptyState() {
     const wall = document.getElementById('wall');
     if (wall) {
         wall.innerHTML = `
             <div class="empty-state">
-                <h2>📝 ¡Aún no hay mensajes!</h2>
-                <p>Sé el primero en publicar un mensaje en el muro del aula.</p>
+                <h2>📝 ¡Aún no hay palabras!</h2>
+                <p>Sé el primero en publicar una palabra en el muro del aula.</p>
             </div>
         `;
     }
@@ -90,52 +129,83 @@ function displayErrorState() {
 }
 
 /**
- * Displays messages on the wall
- * @param {Array<string>} messages - Array of message strings
+ * Displays word counts on the wall, sorted by frequency (descending)
+ * @param {Object} wordCounts - Object with words as keys and counts as values
  */
-function displayMessages(messages) {
+function displayWordCounts(wordCounts) {
     const wall = document.getElementById('wall');
     if (!wall) return;
     
     // Clear wall
     wall.innerHTML = '';
     
-    const hasNewMessages = messages.length > previousMessageCount;
+    // Sort words by count (descending) and then alphabetically for ties
+    const sortedWords = Object.entries(wordCounts)
+        .sort(([wordA, countA], [wordB, countB]) => {
+            if (countB !== countA) {
+                return countB - countA; // Sort by count descending
+            }
+            return wordA.localeCompare(wordB); // Sort alphabetically for ties
+        });
     
-    messages.forEach((msg, index) => {
-        const messageElement = createMessageElement(msg, hasNewMessages && index >= previousMessageCount);
-        wall.appendChild(messageElement);
+    const currentTotalWords = Object.keys(wordCounts).length;
+    const hasNewWords = currentTotalWords > previousWordCount;
+    
+    sortedWords.forEach(([word, count], index) => {
+        const wordElement = createWordElement(word, count, hasNewWords && index < (currentTotalWords - previousWordCount));
+        wall.appendChild(wordElement);
     });
     
-    previousMessageCount = messages.length;
+    previousWordCount = currentTotalWords;
 }
 
 /**
- * Creates a message element
- * @param {string} message - The message text
- * @param {boolean} isNew - Whether this is a new message
- * @returns {HTMLDivElement} The message element
+ * Creates a word element with count
+ * @param {string} word - The word text
+ * @param {number} count - The word count
+ * @param {boolean} isNew - Whether this is a new word
+ * @returns {HTMLDivElement} The word element
  */
-function createMessageElement(message, isNew) {
+function createWordElement(word, count, isNew) {
     const div = document.createElement('div');
-    div.className = 'message';
+    div.className = 'word-item';
     
-    // Add animation for new messages
+    // Add animation for new words
     if (isNew) {
         div.classList.add('new');
     }
     
-    div.textContent = message;
+    // Add size class based on frequency (for visual emphasis)
+    if (count >= 10) {
+        div.classList.add('high-frequency');
+    } else if (count >= 5) {
+        div.classList.add('medium-frequency');
+    } else {
+        div.classList.add('low-frequency');
+    }
+    
+    // Capitalize the word and show count
+    const capitalizedWord = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    div.innerHTML = `
+        <span class="word">${capitalizedWord}</span>
+        <span class="count">(${count})</span>
+    `;
+    
     return div;
 }
 
 /**
- * Updates the message count in the status
- * @param {number} count - The number of messages
+ * Updates the word count status
+ * @param {Object} wordCounts - The word counts object
  */
-function updateMessageCount(count) {
-    const messageText = count === 1 ? 'mensaje' : 'mensajes';
-    updateStatus(`${count} ${messageText} • Actualizado ahora mismo`, 'normal');
+function updateWordCountStatus(wordCounts) {
+    const uniqueWords = Object.keys(wordCounts).length;
+    const totalOccurrences = Object.values(wordCounts).reduce((sum, count) => sum + count, 0);
+    
+    const wordText = uniqueWords === 1 ? 'palabra única' : 'palabras únicas';
+    const occurrenceText = totalOccurrences === 1 ? 'ocurrencia' : 'ocurrencias';
+    
+    updateStatus(`${uniqueWords} ${wordText} • ${totalOccurrences} ${occurrenceText} • Actualizado ahora mismo`, 'normal');
 }
 
 /**
@@ -143,16 +213,18 @@ function updateMessageCount(count) {
  */
 function handleVisibilityChange() {
     if (!document.hidden) {
-        fetchMessages();
+        fetchWordCounts();
     }
 }
 
 /**
- * Cleans up intervals when page is unloaded
+ * Cleans up when page is unloaded
  */
 function cleanup() {
-    if (refreshInterval) {
-        clearInterval(refreshInterval);
+    // Remove refresh button if it exists
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) {
+        refreshBtn.remove();
     }
 }
 

@@ -73,14 +73,14 @@ async function handleFormSubmit(event) {
     
     const input = document.getElementById('messageInput');
     const submitBtn = document.querySelector('input[type="submit"]');
-    const message = input.value.trim();
+    const word = input.value.trim();
 
-    if (message) {
-        // Validate the message
-        const validation = validateMessage(message);
+    if (word) {
+        // Validate the word
+        const validation = validateMessage(word);
         
         if (validation.isValid) {
-            await postMessage(message, input, submitBtn);
+            await postMessage(word, input, submitBtn);
         } else {
             showErrorMessage(validation.errorMessage, submitBtn);
         }
@@ -88,31 +88,31 @@ async function handleFormSubmit(event) {
 }
 
 /**
- * Posts a message to the server
- * @param {string} message - The message to post
+ * Posts a word to the server
+ * @param {string} word - The word to post
  * @param {HTMLInputElement} input - The input element
  * @param {HTMLInputElement} submitBtn - The submit button element
  */
-async function postMessage(message, input, submitBtn) {
+async function postMessage(word, input, submitBtn) {
     try {
         // Show loading state
         setLoadingState(submitBtn, input, true);
         
         // Use configuration from environment variables
         const apiUrl = window.APP_CONFIG?.API_URL || 'http://localhost:3000';
-        const response = await fetch(`${apiUrl}/messages`, {
+        const response = await fetch(`${apiUrl}/words`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: message })
+            body: JSON.stringify({ word: word })
         });
 
         if (response.ok) {
             handlePostSuccess(input, submitBtn);
         } else {
-            throw new Error('Failed to post message');
+            throw new Error('Failed to post word');
         }
     } catch (error) {
-        console.error('Error posting message:', error);
+        console.error('Error posting word:', error);
         handlePostError(submitBtn);
     } finally {
         // Re-enable form after a delay
